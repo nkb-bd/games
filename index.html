@@ -392,18 +392,21 @@
 	var ballRadius = 10;
 
 	// for ball
-	var dx = .95;
-	var dy = -.95;
+	var dx = 2;
+	var dy = -2;
 
 	// score
 
 	var score = 0;
+
+	// life
+	var lives = 3;
 	// bricks
 
 	var brickRowCount = 3;
-	var brickColumnCount = 5;
-	var brickWidth = 75;
-	var brickHeight = 20;
+	var brickColumnCount = 7;
+	var brickWidth = 55;
+	var brickHeight = 15;
 	var brickPadding = 10;
 	var brickOffsetTop = 30;
 	var brickOffsetLeft = 30;
@@ -416,6 +419,14 @@
 	    }
 	}
 
+
+	document.addEventListener("mousemove", mouseMoveHandler, false);
+	function mouseMoveHandler(e) {
+	    var relativeX = e.clientX - canvas.offsetLeft;
+	    if(relativeX > 0 && relativeX < canvas.width) {
+	        paddleX = relativeX - paddleWidth/2;
+	    }
+	}
 
 	function drawBall() {
 	    ctx.beginPath();
@@ -490,10 +501,11 @@
 	                    dy = -dy;
 	                    b.status = 0;
 	                    score++;
+	                   
 	                    if(score == brickRowCount*brickColumnCount) {
 	                        alert("YOU WIN, CONGRATULATIONS!");
 	                        document.location.reload();
-	                        clearInterval(interval); // Needed for Chrome to end game
+	                        
 	                    }
 	                }
 	            }
@@ -517,6 +529,11 @@
 	    ctx.fillText("Score: "+score, 8, 20);
 	}
 
+	function drawLives() {
+	    ctx.font = "16px Arial";
+	    ctx.fillStyle = "#0095DD";
+	    ctx.fillText("Lives: "+lives, canvas.width-65, 20);
+	}
 
 
 	function draw() {
@@ -528,6 +545,7 @@
 	    collisionDetection();
 	    drawPaddle();
 		drawScore();
+		drawLives();
 	    x += dx;
 	    y += dy;
 
@@ -543,15 +561,30 @@
 
 		if(y + dy < ballRadius) {
 		    dy = -dy;
+		    // speedup
+		    // dy--;
 		} else if(y + dy > canvas.height-ballRadius-paddleHeight+1) {
 		    if(x > paddleX && x < paddleX + paddleWidth) {
 
 		        dy = -dy;
+		        // speedup
+		        // dy--
 		    }
 		    else {
-		        alert("GAME OVER");
-		        document.location.reload();
-			    clearInterval(interval); // Needed for Chrome to end game
+		        // life
+		        lives--;
+				if(!lives) {
+				    alert("GAME OVER");
+				    document.location.reload();
+				    
+				}
+				else {
+				    x = canvas.width/2;
+				    y = canvas.height-30;
+				    dx = 2;
+				    dy = -2;
+				    paddleX = (canvas.width-paddleWidth)/2;
+				}
 		    }
 		}
 		// for paddle movment
@@ -561,6 +594,8 @@
 		else if(leftPressed && paddleX > 0) {
 		    paddleX -= 2;
 		}
+
+		requestAnimationFrame(draw);
 	}
 	
 
@@ -568,7 +603,8 @@
 	function start() {
 		// this.addClass('disabled')
 		// $(this).prop('disabled', 'true')
-		var interval = setInterval(draw, 10);
+		// var interval = setInterval(draw, 10);
+		draw();
 	}
 
 
